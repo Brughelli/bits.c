@@ -245,6 +245,8 @@ int sum3(int x, int y, int z) {
      Fill in code below that computes values for word1 and word2
      without using any '+' operations 
   ***************************************************************/
+  word1 = (x ^ y) ^ z; // Xor x, y, z
+  word2 = ((x & y) | (x & z) | (y & z)) << 1; // word2 stores carry bit
   /**************************************************************
      Don't change anything below here
   ***************************************************************/
@@ -257,8 +259,13 @@ int sum3(int x, int y, int z) {
  *   Max ops: 25
  *   Rating: 3
  */
-int reverseBytes(int x) {
-  return 2;
+int reverseBytes(int x) { // dismantle word into separate bytes, the reassemble with ORs.
+  int byte3 = x & 0xFF;  // Least significant side
+  int byte2 = (x >> 8) & 0xFF; // one left from above byte
+  int byte1 = (x >> 16) & 0xFF; // one left from above byte
+  int byte0 = (x >> 24) & 0xFF; 
+  
+  return (byte3 << 24) | (byte2 << 16) | (byte1 << 8)| byte0; // reassemble with ORs
 }
 /* 
  * isNegative - return 1 if x < 0, return 0 otherwise 
@@ -267,8 +274,8 @@ int reverseBytes(int x) {
  *   Max ops: 6
  *   Rating: 3
  */
-int isNegative(int x) {
-  return 2;
+int isNegative(int x) { // First bit of int tells us whether it is neagtive or not
+  return (x >> 31) & 0x1; // right shift first bit to the bottom then mask with 1 to get 0 or 1
 }
 /* 
  * isLess - if x < y  then return 1, else return 0 
@@ -278,7 +285,22 @@ int isNegative(int x) {
  *   Rating: 3
  */
 int isLess(int x, int y) {
-  return 2;
+  int sign = x ^ y; // Xor to subtract numbers
+  int out = ~sign;
+  int diff = y + (~x + 1);
+  int equal = !diff; // test for equality
+  
+  sign = sign & x; // get sign bit from x
+  
+  diff = ~diff;
+  
+  out = out & diff; // combine with diff
+  out = out | sign; // and sign
+  out = out & (1 << 31); // check for diff being negative
+  
+  out = (!!out) & (!equal); // reduces out and equal to 0x1 and/ or 0x0
+  
+  return out;
 }
 // rating 4
 /* 
