@@ -312,7 +312,10 @@ int isLess(int x, int y) {
  *   Rating: 4 
  */
 int isNonZero(int x) {
-  return 2;
+  
+  int a = ~x + 1; // case if 0.  this takes care of negative 0 issue //!!x
+  
+  return ((a >> 31) | (x >> 31)) & 1; // shift the sign bit (MSB), OR them (add them), mask with 1 to see if either had sign bit
 }
 /*
  * bitCount - returns count of number of 1's in word
@@ -321,8 +324,17 @@ int isNonZero(int x) {
  *   Max ops: 40
  *   Rating: 4
  */
-int bitCount(int x) {
-  return 2;
+int bitCount(int x) { // each of the 5 steps below adds neighboring bits together in groups of 1, 2, 4, 8, 16.
+  
+  int c;
+  
+  c = (x & 0x55555555) + ((x >> 1) & 0x55555555);
+  c = (c & 0x33333333) + ((c >> 2) & 0x33333333);
+  c = (c & 0x0F0F0F0F) + ((c >> 4) & 0x0F0F0F0F);
+  c = (c & 0x00FF00FF) + ((c >> 8) & 0x00FF00FF);
+  c = (c & 0x0000FFFF) + ((c >> 16)& 0x0000FFFF);
+  
+  return c;
 }
 /* 
  * bang - Compute !x without using !
@@ -331,8 +343,15 @@ int bitCount(int x) {
  *   Max ops: 12
  *   Rating: 4 
  */
-int bang(int x) {
-  return 2;
+int bang(int x) { // use OR to accumlate any 1's in the number
+	
+  x = ( x >> 16 ) | x;
+  x = ( x >> 8 ) | x;
+  x = ( x >> 4 ) | x;
+  x = ( x >> 2 ) | x;
+  x = ( x >> 1) | x;
+  
+  return ~x & 1;
 }
 /*
  * bitParity - returns 1 if x contains an odd number of 0's
@@ -341,6 +360,13 @@ int bang(int x) {
  *   Max ops: 20
  *   Rating: 4
  */
-int bitParity(int x) {
-  return 2;
+int bitParity(int x) { //XORing two numbers returns a number with same bit parity. 
+					   //Keep shifting half of our number until reduced to 1 bit simple case
+  x = ( x >> 16 ) ^ x;
+  x = ( x >> 8 ) ^ x;
+  x = ( x >> 4 ) ^ x;
+  x = ( x >> 2 ) ^ x;
+  x = ( x >> 1) ^ x;
+  
+  return (x & 1);
 }
